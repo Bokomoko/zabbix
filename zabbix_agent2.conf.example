@@ -25,14 +25,29 @@ LogFileSize=100
 # ===========================================
 
 # IP ou hostname do Zabbix Server
-# SUBSTITUA 192.168.1.100 pelo IP real do seu servidor Zabbix
-Server=192.168.1.100
+#
+# PARA SERVIDOR LOCAL (mesma rede):
+# Server=192.168.1.100
+#
+# PARA GITHUB CODESPACES (substitua pela sua URL real):
+# Server=psychic-funicular-1234567890-10051.app.github.dev
+#
+# SUBSTITUA pelo endereço real do seu servidor Zabbix:
+Server=ZABBIX_SERVER_IP_OR_URL
 
 # Porta do Zabbix Server
 ServerPort=10051
 
 # IP ou hostname para conexões ativas (opcional)
-ServerActive=192.168.1.100:10051
+#
+# PARA SERVIDOR LOCAL (mesma rede):
+# ServerActive=192.168.1.100:10051
+#
+# PARA GITHUB CODESPACES (substitua pela sua URL real):
+# ServerActive=psychic-funicular-1234567890-10051.app.github.dev:10051
+#
+# SUBSTITUA pelo endereço real do seu servidor Zabbix:
+ServerActive=ZABBIX_SERVER_IP_OR_URL:10051
 
 # Nome do host (deve ser único)
 # ALTERE para um nome único para cada dispositivo

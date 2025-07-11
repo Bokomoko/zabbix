@@ -4,6 +4,8 @@ Este projeto configura um sistema completo de monitoramento Zabbix usando **Podm
 
 > 🐧 **Ambiente Testado**: Este projeto foi desenvolvido e testado especificamente em **Linux Mint** usando **Podman** como runtime de containers, oferecendo uma alternativa segura e rootless ao Docker.
 
+> 🌐 **GitHub Codespaces**: Este projeto funciona perfeitamente em GitHub Codespaces! Para acesso remoto, consulte a seção [Acesso Remoto via GitHub Codespaces](#-acesso-remoto-via-github-codespaces) para configurar port forwarding e acessar o Zabbix de qualquer lugar.
+
 ## 📋 Visão Geral
 
 O sistema é composto por:
@@ -228,6 +230,163 @@ docker-compose -f podman-compose.yml ps
 - **10050**: Zabbix Agent2
 - **10051**: Zabbix Server
 - **31999**: Zabbix Agent2 (porta adicional)
+
+## 🌐 Acesso Remoto via GitHub Codespaces
+
+### 📡 Configuração de Port Forwarding
+
+Se você está executando este projeto em um **GitHub Codespace** ou **VS Code Tunnel**, precisa configurar o port forwarding para acessar o Zabbix remotamente:
+
+#### 🔧 Método 1: GitHub Codespaces (Interface Web)
+1. **Abra a aba "PORTS"** no VS Code do Codespace
+2. **Clique em "Forward a Port"** ou use `Ctrl+Shift+P` → "Forward Port"
+3. **Configure as portas principais**:
+   ```
+   Porta 8080  → Zabbix Web Interface (HTTP)
+   Porta 8443  → Zabbix Web Interface (HTTPS)
+   Porta 10051 → Zabbix Server (para agents externos)
+   Porta 10050 → Zabbix Agent2 (para monitoramento)
+   ```
+4. **Defina visibilidade**:
+   - 🔒 **Private**: Apenas você (recomendado para desenvolvimento)
+   - 🌐 **Public**: Qualquer pessoa com a URL (⚠️ cuidado com segurança)
+
+#### 🔧 Método 2: Via linha de comando no Codespace
+```bash
+# Tornar as portas públicas via VS Code CLI
+# Execute dentro do terminal do Codespace:
+
+# Port forwarding automático (recomendado)
+# As portas são detectadas automaticamente quando os containers sobem
+
+# Verificar status dos forwards
+gh codespace ports
+
+# Listar forwards ativos
+curl -s "http://localhost:8080" && echo "✅ Zabbix acessível localmente"
+```
+
+#### 🔧 Método 3: SSH Tunnel (Para Codespaces via SSH)
+```bash
+# Se estiver usando SSH para acessar o Codespace
+ssh -L 8080:localhost:8080 -L 10051:localhost:10051 seu-codespace
+
+# Depois acesse localmente:
+# http://localhost:8080
+```
+
+### 🔗 URLs de Acesso Remoto
+
+Após configurar o port forwarding, você receberá URLs semelhantes a:
+
+```
+🌐 Interface Web (HTTP):  https://psychic-funicular-1234567890.github.dev
+🌐 Interface Web (HTTPS): https://psychic-funicular-1234567890-8443.app.github.dev
+📡 Zabbix Server:         psychic-funicular-1234567890-10051.app.github.dev:10051
+```
+
+> **💡 Dica**: O GitHub Codespaces automaticamente gera URLs únicas para cada porta forwarded.
+
+### 🛡️ Configuração de Segurança para Acesso Remoto
+
+#### 1. **Alterar Senha Padrão** (OBRIGATÓRIO)
+```bash
+# Após primeiro acesso, SEMPRE altere:
+# Admin → Users → Admin → Change Password
+# Nova senha forte: mínimo 12 caracteres, maiúsculas, minúsculas, números e símbolos
+```
+
+#### 2. **Configurar HTTPS** (Recomendado)
+```bash
+# Gerar certificado auto-assinado para desenvolvimento
+mkdir -p cert
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout cert/zabbix.key \
+    -out cert/zabbix.crt \
+    -subj "/C=BR/ST=Estado/L=Cidade/O=Home/CN=zabbix.local"
+
+# Reiniciar para aplicar certificados
+podman-compose -f podman-compose.env.yml restart zabbix-web
+```
+
+#### 3. **Restringir Acesso por IP** (Opcional)
+```yaml
+# No podman-compose.env.yml, adicionar regras de firewall:
+environment:
+  # Permitir apenas IPs específicos (exemplo)
+  ZBX_DENY_GUI_ACCESS: "0.0.0.0/0"
+  ZBX_ALLOW_GUI_ACCESS: "192.168.1.0/24,10.0.0.0/8"
+```
+
+### 📱 Configuração de Agentes Externos via Codespace
+
+Para monitorar dispositivos externos (sua rede doméstica) a partir do Codespace:
+
+#### 1. **Configurar o Zabbix Server no Codespace**
+```bash
+# Anotar a URL do Zabbix Server (porta 10051)
+echo "Zabbix Server URL: $(gh codespace ports | grep 10051)"
+
+# Exemplo de saída:
+# psychic-funicular-1234567890-10051.app.github.dev:10051
+```
+
+#### 2. **Configurar Agentes na Rede Doméstica**
+```bash
+# No arquivo zabbix_agent2.conf do dispositivo doméstico:
+Server=psychic-funicular-1234567890-10051.app.github.dev
+ServerActive=psychic-funicular-1234567890-10051.app.github.dev:10051
+Hostname=meu-pc-casa
+```
+
+#### 3. **Exemplo de Configuração Completa**
+```bash
+# Para um PC Linux em casa, editar /etc/zabbix/zabbix_agent2.conf:
+sudo nano /etc/zabbix/zabbix_agent2.conf
+
+# Configuração:
+Server=psychic-funicular-1234567890-10051.app.github.dev
+ServerActive=psychic-funicular-1234567890-10051.app.github.dev:10051
+Hostname=pc-sala-casa
+ListenPort=10050
+EnableRemoteCommands=1
+
+# Reiniciar agent
+sudo systemctl restart zabbix-agent2
+```
+
+### ⚠️ Limitações e Considerações
+
+#### 🔒 **Segurança**
+- ⚠️ **Nunca use porta pública** para ambiente de produção
+- ✅ **Use sempre HTTPS** para interface web
+- ✅ **Configure firewall** e autenticação forte
+- ✅ **Monitore logs** de acesso
+
+#### 🌐 **Conectividade**
+- ⚠️ **Latência**: Codespace pode ter latência para monitoramento real-time
+- ⚠️ **Downtime**: Codespace para após inatividade (configurable)
+- ✅ **Persistência**: Use volumes para dados persistirem
+
+#### 💰 **Custos GitHub**
+- ⚠️ **Core hours**: Codespace consome horas do plano GitHub
+- ⚠️ **Storage**: Volumes persistentes contam no storage
+- 💡 **Dica**: Use para desenvolvimento/testes, não produção 24/7
+
+### 🚀 Workflow Recomendado para Desenvolvimento
+
+```bash
+# 1. Desenvolver e testar no Codespace
+podman-compose -f podman-compose.env.yml up -d
+
+# 2. Configurar port forwarding (automático)
+# 3. Acessar via URL fornecida pelo GitHub
+
+# 4. Para produção: fazer deploy em VPS/servidor dedicado
+git clone <seu-repo>
+cd zabbix
+# ... configurar com IPs reais da rede de produção
+```
 
 ## 🔧 Configurações Avançadas do Podman
 
@@ -534,10 +693,6 @@ docker logs zabbix-web
 
 # Ver logs do Agent2
 docker logs zabbix-agent2
-
-# Seguir logs em tempo real
-docker logs -f zabbix-server
-```
 
 # Seguir logs em tempo real
 docker logs -f zabbix-server
