@@ -2,7 +2,7 @@ version: '3.5'
 services:
   zabbix-server:
     container_name: "zabbix-server"
-    image: zabbix/zabbix-server-pgsql:alpine-trunk
+    image: docker.io/zabbix/zabbix-server-pgsql:alpine-trunk
     restart: always
     ports:
       - 10051:10051
@@ -32,7 +32,7 @@ services:
 
   zabbix-web-nginx-pgsql:
     container_name: "zabbix-web"
-    image: zabbix/zabbix-web-nginx-pgsql:alpine-trunk
+    image: docker.io/zabbix/zabbix-web-nginx-pgsql:alpine-trunk
     restart: always
     ports:
       - 8080:8080
@@ -69,7 +69,7 @@ services:
 
   zabbix-db-agent2:
     container_name: "zabbix-agent2"
-    image: zabbix/zabbix-agent2:alpine-trunk
+    image: docker.io/zabbix/zabbix-agent2:alpine-trunk
     user: root
     depends_on:
       - zabbix-server
@@ -96,7 +96,7 @@ services:
 
   db:
     container_name: "zabbix_db"
-    image: postgres:15.6-bullseye
+    image: docker.io/library/postgres:15.6-bullseye
     restart: always
     volumes:
      - zbx_db15:/var/lib/postgresql/data
