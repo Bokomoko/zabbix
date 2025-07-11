@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  postgres-server:
+    image: docker.io/library/postgres:16
+    container_name: postgres-server
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data:Z
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    network_mode: host
+
+  zabbix-server:
+    image: docker.io/zabbix/zabbix-server-pgsql:alpine-7.4-latest
+    container_name: zabbix-server
+    environment:
+      DB_SERVER_HOST: 127.0.0.1
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres-server:
+        condition: service_healthy
+    restart: always
+    network_mode: host
+
+  zabbix-web:
+    image: docker.io/zabbix/zabbix-web-nginx-pgsql:alpine-7.4-latest
+    container_name: zabbix-web
+    environment:
+      ZBX_SERVER_HOST: 127.0.0.1
+      DB_SERVER_HOST: 127.0.0.1
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PHP_TZ: ${PHP_TZ}
+    depends_on:
+      - zabbix-server
+    restart: always
+    network_mode: host
+
+  zabbix-agent:
+    image: docker.io/zabbix/zabbix-agent:alpine-7.4-latest
+    container_name: zabbix-agent
+    environment:
+      ZBX_SERVER_HOST: 127.0.0.1
+      PHP_TZ: ${PHP_TZ}
+    restart: always
+    network_mode: host
