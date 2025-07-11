@@ -61,7 +61,7 @@ Este projeto foi configurado com **nomes de imagens totalmente qualificados** pa
 ```yaml
 # ✅ Configuração atual (totalmente qualificada)
 image: docker.io/zabbix/zabbix-server-pgsql:alpine-trunk
-image: docker.io/zabbix/zabbix-web-nginx-pgsql:alpine-trunk  
+image: docker.io/zabbix/zabbix-web-nginx-pgsql:alpine-trunk
 image: docker.io/zabbix/zabbix-agent2:alpine-trunk
 image: docker.io/library/postgres:15.6-bullseye
 
