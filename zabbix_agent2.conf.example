@@ -1,146 +1,335 @@
 # Configuração do Zabbix Agent2 para Hosts Externos
-# Copie este arquivo para /etc/zabbix/zabbix_agent2.conf nos hosts que deseja monitorar
+# ===========================================
+# 🏠 PROJETO: Zabbix Monitoramento Rede Doméstica
+# 🐧 OTIMIZADO: Linux Mint / Ubuntu / Debian com PODMAN
+# 📅 VERSÃO: Zabbix 7.4 LTS
+# ===========================================
+#
+# 📋 INSTRUÇÕES RÁPIDAS:
+# 1. Copie este arquivo para /etc/zabbix/zabbix_agent2.conf
+# 2. Edite as configurações marcadas com ⚠️
+# 3. Reinicie o serviço: sudo systemctl restart zabbix-agent2
+#
+# 🔒 IMPORTANTE: Altere TODOS os valores marcados com ⚠️
 
 # ===========================================
 # CONFIGURAÇÕES BÁSICAS
 # ===========================================
 
-# PID file
+# Arquivo PID do processo
 PidFile=/var/run/zabbix/zabbix_agent2.pid
 
-# Log file
+# Arquivo de log
 LogFile=/var/log/zabbix/zabbix_agent2.log
 
-# Log level
-# 0 - basic information about starting and stopping of Zabbix processes
-# 1 - critical information
-# 2 - error information
-# 3 - warnings
-# 4 - for debugging (produces lots of information)
-# 5 - extended debugging (produces even more information)
+# Nível de log (0=básico, 1=crítico, 2=erro, 3=aviso, 4=debug, 5=debug estendido)
+LogLevel=3
+
+# Tamanho máximo do arquivo de log (MB)
 LogFileSize=100
 
 # ===========================================
 # CONFIGURAÇÕES DE REDE
 # ===========================================
 
-# IP ou hostname do Zabbix Server
+# ⚠️ ALTERE: IP ou hostname do Zabbix Server
 #
 # PARA SERVIDOR LOCAL (mesma rede):
-# Server=192.168.1.100
+# Server=192.168.1.120
 #
 # PARA GITHUB CODESPACES (substitua pela sua URL real):
 # Server=psychic-funicular-1234567890-10051.app.github.dev
 #
-# SUBSTITUA pelo endereço real do seu servidor Zabbix:
-Server=ZABBIX_SERVER_IP_OR_URL
+# PARA VPS/CLOUD (substitua pelo seu domínio):
+# Server=meu-servidor.exemplo.com
+#
+# ⚠️ SUBSTITUA pelo endereço real do seu servidor Zabbix:
+Server=192.168.1.120
 
-# Porta do Zabbix Server
+# Porta do Zabbix Server (padrão: 10051)
 ServerPort=10051
 
-# IP ou hostname para conexões ativas (opcional)
+# ⚠️ ALTERE: Configuração para checks ativos (recomendado para melhor performance)
 #
 # PARA SERVIDOR LOCAL (mesma rede):
-# ServerActive=192.168.1.100:10051
+# ServerActive=192.168.1.120:10051
 #
 # PARA GITHUB CODESPACES (substitua pela sua URL real):
 # ServerActive=psychic-funicular-1234567890-10051.app.github.dev:10051
 #
-# SUBSTITUA pelo endereço real do seu servidor Zabbix:
-ServerActive=ZABBIX_SERVER_IP_OR_URL:10051
+# ⚠️ SUBSTITUA pelo endereço real do seu servidor Zabbix:
+ServerActive=192.168.1.120:10051
 
-# Nome do host (deve ser único)
-# ALTERE para um nome único para cada dispositivo
-Hostname=meu-computador-casa
+# ⚠️ ALTERE: Nome único deste host no Zabbix
+# IMPORTANTE: Deve ser único para cada dispositivo!
+# EXEMPLOS SUGERIDOS:
+# - notebook-joao-casa
+# - desktop-sala-linux
+# - servidor-raspberry-pi
+# - workstation-escritorio
+Hostname=meu-dispositivo-casa
 
 # ===========================================
-# CONFIGURAÇÕES DE INTERFACE
+# CONFIGURAÇÕES DE INTERFACE LOCAL
 # ===========================================
 
 # IP para escutar conexões (0.0.0.0 = todas as interfaces)
 ListenIP=0.0.0.0
 
-# Porta para escutar
+# Porta para escutar conexões do servidor
 ListenPort=10050
 
 # ===========================================
 # CONFIGURAÇÕES DE SEGURANÇA
 # ===========================================
 
-# Permitir conexões apenas destes IPs (opcional)
-# SUBSTITUA pelo IP do seu servidor Zabbix
-# AllowRoot=1
+# ⚠️ RECOMENDADO: Restringir conexões apenas ao servidor Zabbix
+# Descomente e ajuste o IP do seu servidor:
+# Server=192.168.1.120,127.0.0.1
 
 # Timeout para conexões (segundos)
 Timeout=30
 
-# ===========================================
-# CONFIGURAÇÕES AVANÇADAS
-# ===========================================
+# Permitir execução de comandos remotos (CUIDADO: risco de segurança!)
+# Só habilite se necessário e confiar completamente no servidor
+EnableRemoteCommands=0
 
-# Permitir execução de comandos remotos (cuidado com segurança!)
-# EnableRemoteCommands=1
-
-# Permitir items não seguros (scripts personalizados)
+# Permitir parâmetros não seguros (scripts personalizados)
 # UnsafeUserParameters=1
 
-# Intervalo de envio de dados ativos (segundos)
-RefreshActiveChecks=60
+# ===========================================
+# CONFIGURAÇÕES DE PERFORMANCE
+# ===========================================
 
-# Buffer para items ativos
+# Intervalo para verificar items ativos (segundos)
+RefreshActiveChecks=120
+
+# Buffer para envio de dados
 BufferSend=5
 BufferSize=100
 
+# Número máximo de linhas por segundo em logs
+MaxLinesPerSecond=20
+
 # ===========================================
-# PLUGINS ESPECÍFICOS
+# PLUGINS DO ZABBIX AGENT2 (PODMAN/DOCKER)
 # ===========================================
 
-# Plugin para Docker (se aplicável)
-Plugins.Docker.Endpoint=unix:///var/run/docker.sock
+# 🐧 PODMAN (Linux Mint/Ubuntu - RECOMENDADO)
+# Plugin para monitoramento de containers Podman (rootless)
+# Descomente a linha abaixo se este host usa Podman:
+# Plugins.Docker.Endpoint=unix:///run/user/1000/podman/podman.sock
 
-# Plugin para systemd
+# 🐧 PODMAN (modo root - menos comum)
+# Plugins.Docker.Endpoint=unix:///run/podman/podman.sock
+
+# 🐳 DOCKER (alternativa)
+# Plugin para monitoramento de containers Docker
+# Descomente apenas se este host usa Docker em vez de Podman:
+# Plugins.Docker.Endpoint=unix:///var/run/docker.sock
+
+# Plugin para monitoramento do systemd
 Plugins.Systemd.System=true
 
-# Plugin para proc (monitoramento de processos)
+# Plugin para monitoramento de processos
 Plugins.Proc.System=true
 
-# ===========================================
-# PARÂMETROS PERSONALIZADOS (EXEMPLOS)
-# ===========================================
-
-# Exemplo: Monitorar temperatura da CPU (Linux)
-# UserParameter=cpu.temp,sensors | grep "Core 0" | awk '{print $3}' | sed 's/+//g' | sed 's/°C//g'
-
-# Exemplo: Monitorar espaço específico
-# UserParameter=disk.free[*],df -h $1 | tail -1 | awk '{print $4}' | sed 's/%//g'
-
-# Exemplo: Monitorar serviço específico
-# UserParameter=service.status[*],systemctl is-active $1
-
-# Exemplo: Velocidade da internet (requer speedtest-cli)
-# UserParameter=internet.download,speedtest-cli --simple | grep "Download" | awk '{print $2}'
-# UserParameter=internet.upload,speedtest-cli --simple | grep "Upload" | awk '{print $2}'
+# Plugin para descoberta de interfaces de rede
+Plugins.Net.Interface.Discovery=true
 
 # ===========================================
-# INSTRUÇÕES DE INSTALAÇÃO
+# PARÂMETROS PERSONALIZADOS ÚTEIS
 # ===========================================
 
-# Ubuntu/Debian:
-# 1. wget https://repo.zabbix.com/zabbix/7.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest+ubuntu22.04_all.deb
-# 2. sudo dpkg -i zabbix-release_latest+ubuntu22.04_all.deb
-# 3. sudo apt update && sudo apt install zabbix-agent2
-# 4. sudo cp este_arquivo /etc/zabbix/zabbix_agent2.conf
-# 5. sudo systemctl restart zabbix-agent2
-# 6. sudo systemctl enable zabbix-agent2
+# 🌡️ Temperatura do processador (requer lm-sensors)
+# sudo apt install lm-sensors && sudo sensors-detect
+UserParameter=cpu.temperature,sensors 2>/dev/null | grep "Core 0" | head -1 | awk '{print $3}' | sed 's/+//;s/°C//' || echo "0"
 
-# CentOS/RHEL:
-# 1. sudo rpm -Uvh https://repo.zabbix.com/zabbix/7.4/rhel/8/x86_64/zabbix-release-7.4-1.el8.noarch.rpm
-# 2. sudo dnf clean all && sudo dnf install zabbix-agent2
-# 3. sudo cp este_arquivo /etc/zabbix/zabbix_agent2.conf
-# 4. sudo systemctl restart zabbix-agent2
-# 5. sudo systemctl enable zabbix-agent2
+# 📊 Uso de CPU detalhado
+UserParameter=cpu.usage.user,grep "cpu " /proc/stat | awk '{print ($2/($2+$3+$4+$5+$6+$7+$8))*100}'
+UserParameter=cpu.usage.system,grep "cpu " /proc/stat | awk '{print ($4/($2+$3+$4+$5+$6+$7+$8))*100}'
 
-# Windows:
-# 1. Baixe o Zabbix Agent2 para Windows do site oficial
-# 2. Instale e configure o arquivo zabbix_agent2.conf
-# 3. Registre como serviço do Windows
+# 💾 Informações de memória em MB
+UserParameter=memory.available.mb,free -m | awk 'NR==2{print $7}'
+UserParameter=memory.used.percent,free | awk 'NR==2{printf "%.1f", $3*100/$2}'
+
+# 🔥 Temperatura da GPU NVIDIA (requer nvidia-smi)
+UserParameter=gpu.nvidia.temperature,nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo "0"
+UserParameter=gpu.nvidia.usage,nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null || echo "0"
+
+# 🌐 Velocidade da Internet (requer speedtest-cli)
+# sudo apt install speedtest-cli
+UserParameter=internet.speed.download,speedtest-cli --simple 2>/dev/null | grep "Download" | awk '{print $2}' || echo "0"
+UserParameter=internet.speed.upload,speedtest-cli --simple 2>/dev/null | grep "Upload" | awk '{print $2}' || echo "0"
+UserParameter=internet.ping,speedtest-cli --simple 2>/dev/null | grep "Ping" | awk '{print $2}' || echo "0"
+
+# 🔌 Status de serviços do sistema
+UserParameter=service.status[*],systemctl is-active $1 2>/dev/null && echo "1" || echo "0"
+UserParameter=service.enabled[*],systemctl is-enabled $1 2>/dev/null && echo "1" || echo "0"
+
+# 💿 Informações de disco
+UserParameter=disk.free.percent[*],df -h $1 2>/dev/null | tail -1 | awk '{print $5}' | sed 's/%//' || echo "0"
+UserParameter=disk.free.gb[*],df -BG $1 2>/dev/null | tail -1 | awk '{print $4}' | sed 's/G//' || echo "0"
+UserParameter=disk.used.gb[*],df -BG $1 2>/dev/null | tail -1 | awk '{print $3}' | sed 's/G//' || echo "0"
+
+# 🖥️ Informações do sistema
+UserParameter=system.uptime.days,awk '{print int($1/86400)}' /proc/uptime
+UserParameter=system.uptime.hours,awk '{print int($1/3600)}' /proc/uptime
+UserParameter=system.kernel.version,uname -r
+UserParameter=system.os.version,lsb_release -d 2>/dev/null | cut -f2 || cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2
+
+# 🔋 Status da bateria (laptops)
+UserParameter=battery.level,acpi -b 2>/dev/null | grep -oP '\d+(?=%)' | head -1 || echo "100"
+UserParameter=battery.status,acpi -b 2>/dev/null | grep -oP '(Charging|Discharging|Full)' | head -1 || echo "Unknown"
+UserParameter=battery.time.remaining,acpi -b 2>/dev/null | grep -oP '\d+:\d+' | head -1 || echo "00:00"
+
+# 🌡️ Temperatura de discos (requer hddtemp)
+# sudo apt install hddtemp
+UserParameter=disk.temperature[*],sudo hddtemp $1 2>/dev/null | awk '{print $4}' | sed 's/°C//' || echo "0"
+
+# 📡 Informações de rede WiFi
+UserParameter=wifi.signal.strength,iwconfig 2>/dev/null | grep "Signal level" | awk '{print $4}' | sed 's/level=//' | head -1 || echo "0"
+UserParameter=wifi.essid,iwconfig 2>/dev/null | grep "ESSID" | awk '{print $4}' | sed 's/ESSID://;s/"//g' | head -1 || echo "unknown"
+
+# 🐧 Informações específicas do Podman (se instalado)
+UserParameter=podman.containers.running,podman ps --format "table {{.Names}}" 2>/dev/null | wc -l || echo "0"
+UserParameter=podman.containers.total,podman ps -a --format "table {{.Names}}" 2>/dev/null | wc -l || echo "0"
+UserParameter=podman.images.count,podman images --format "table {{.Repository}}" 2>/dev/null | wc -l || echo "0"
+
+# 🖥️ Informações de hardware
+UserParameter=hardware.cpu.model,grep "model name" /proc/cpuinfo | head -1 | cut -d':' -f2 | sed 's/^ *//'
+UserParameter=hardware.cpu.cores,nproc
+UserParameter=hardware.memory.total.gb,free -g | awk 'NR==2{print $2}'
+
+# ===========================================
+# CONFIGURAÇÕES PARA DIFERENTES AMBIENTES
+# ===========================================
+
+# 📡 GITHUB CODESPACES
+# Para conectar a um Zabbix em Codespace, descomente e ajuste:
+# Server=SEU-CODESPACE-URL-10051.app.github.dev
+# ServerActive=SEU-CODESPACE-URL-10051.app.github.dev:10051
+# Hostname=codespace-agent-$(hostname)
+
+# 🥧 RASPBERRY PI
+# Parâmetros específicos para RPi (descomente se aplicável):
+# UserParameter=rpi.cpu.temp,vcgencmd measure_temp 2>/dev/null | awk -F= '{print $2}' | sed 's/°C//' || echo "0"
+# UserParameter=rpi.gpu.temp,vcgencmd measure_temp 2>/dev/null | awk -F= '{print $2}' | sed 's/°C//' || echo "0"
+# UserParameter=rpi.cpu.freq,vcgencmd measure_clock arm 2>/dev/null | awk -F= '{print $2/1000000}' || echo "0"
+
+# 🌐 ROTEADORES (se suportarem SSH e agente)
+# UserParameter=router.wan.ip,curl -s ifconfig.me || echo "unknown"
+# UserParameter=router.uptime.days,uptime | awk '{print $3}' | sed 's/,//' || echo "0"
+
+# ===========================================
+# INSTRUÇÕES DE INSTALAÇÃO POR SISTEMA
+# ===========================================
+
+# 🐧 UBUNTU/DEBIAN/LINUX MINT (RECOMENDADO):
+# 1. Instalar repositório Zabbix:
+#    wget https://repo.zabbix.com/zabbix/7.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest+ubuntu22.04_all.deb
+#    sudo dpkg -i zabbix-release_latest+ubuntu22.04_all.deb
+# 2. Atualizar repositórios e instalar:
+#    sudo apt update && sudo apt install -y zabbix-agent2
+# 3. Instalar dependências úteis:
+#    sudo apt install -y lm-sensors speedtest-cli acpi hddtemp
+# 4. Configurar sensores:
+#    sudo sensors-detect
+# 5. Copiar configuração:
+#    sudo cp zabbix_agent2.conf.example /etc/zabbix/zabbix_agent2.conf
+# 6. Editar configuração (IMPORTANTE):
+#    sudo nano /etc/zabbix/zabbix_agent2.conf
+# 7. Ajustar permissões:
+#    sudo chown zabbix:zabbix /etc/zabbix/zabbix_agent2.conf
+#    sudo chmod 640 /etc/zabbix/zabbix_agent2.conf
+# 8. Reiniciar serviço:
+#    sudo systemctl restart zabbix-agent2
+# 9. Habilitar na inicialização:
+#    sudo systemctl enable zabbix-agent2
+# 10. Verificar status:
+#    sudo systemctl status zabbix-agent2
+
+# 🔴 CENTOS/RHEL/ROCKY/ALMA LINUX:
+# 1. sudo rpm -Uvh https://repo.zabbix.com/zabbix/7.4/rhel/9/x86_64/zabbix-release-7.4-1.el9.noarch.rpm
+# 2. sudo dnf clean all && sudo dnf install -y zabbix-agent2
+# 3. sudo dnf install -y lm-sensors speedtest-cli
+# 4. sudo cp zabbix_agent2.conf.example /etc/zabbix/zabbix_agent2.conf
+# 5. sudo systemctl restart zabbix-agent2 && sudo systemctl enable zabbix-agent2
+
+# 🟢 OPENSUSE/SLES:
+# 1. sudo zypper ar https://repo.zabbix.com/zabbix/7.4/sles/15/x86_64/ zabbix
+# 2. sudo zypper install -y zabbix-agent2
+# 3. sudo cp zabbix_agent2.conf.example /etc/zabbix/zabbix_agent2.conf
+# 4. sudo systemctl restart zabbix-agent2 && sudo systemctl enable zabbix-agent2
+
+# 🍎 MACOS (via Homebrew):
+# 1. brew install zabbix
+# 2. cp zabbix_agent2.conf.example /opt/homebrew/etc/zabbix/zabbix_agent2.conf
+# 3. brew services start zabbix-agent2
+
+# 🪟 WINDOWS:
+# 1. Baixe o MSI do site oficial: https://www.zabbix.com/download_agents
+# 2. Instale executando como Administrador
+# 3. Copie a configuração para: C:\Program Files\Zabbix Agent 2\zabbix_agent2.conf
+# 4. Configure os valores necessários no arquivo
+# 5. Execute: sc start "Zabbix Agent 2"
+
+# ===========================================
+# VERIFICAÇÃO E TROUBLESHOOTING
+# ===========================================
+
+# 🔍 VERIFICAR SE O AGENTE ESTÁ FUNCIONANDO:
+# sudo systemctl status zabbix-agent2
+# sudo journalctl -u zabbix-agent2 -f
+
+# 🔍 TESTAR CONECTIVIDADE COM O SERVIDOR:
+# telnet 192.168.1.120 10051
+# nc -zv 192.168.1.120 10051
+
+# 🔍 TESTAR SE O AGENTE RESPONDE LOCALMENTE:
+# zabbix_get -s localhost -k agent.ping
+# zabbix_get -s localhost -k system.uname
+
+# 🔍 VER LOGS EM TEMPO REAL:
+# sudo tail -f /var/log/zabbix/zabbix_agent2.log
+
+# 🔍 TESTAR ITENS PERSONALIZADOS:
+# zabbix_get -s localhost -k "cpu.temperature"
+# zabbix_get -s localhost -k "system.uptime.days"
+
+# 🔍 VERIFICAR CONFIGURAÇÃO:
+# sudo zabbix_agent2 -t agent.ping
+# sudo zabbix_agent2 -T
+
+# 🔍 TESTAR CONECTIVIDADE DE REDE:
+# sudo ufw status (verificar firewall)
+# ss -tuln | grep 10050 (verificar se porta está escutando)
+
+# ===========================================
+# CONFIGURAÇÕES ADICIONAIS DE SEGURANÇA
+# ===========================================
+
+# 🔒 FIREWALL (Ubuntu/Debian):
+# sudo ufw allow from 192.168.1.120 to any port 10050
+# sudo ufw enable
+
+# 🔒 FIREWALL (CentOS/RHEL):
+# sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.1.120" port protocol="tcp" port="10050" accept'
+# sudo firewall-cmd --reload
+
+# 🔒 SELINUX (se habilitado):
+# sudo setsebool -P zabbix_can_network on
+
+# ===========================================
+# NOTAS IMPORTANTES
+# ===========================================
+#
+# 🐧 PODMAN vs DOCKER: Este arquivo está otimizado para Podman (rootless)
+# 🔒 SEGURANÇA: Configure firewall para permitir apenas o IP do servidor
+# 📊 PERFORMANCE: Use checks ativos (ServerActive) para melhor performance
+# 🔧 HARDWARE: Instale lm-sensors para monitoramento de temperatura
+# 📱 MOBILE: Todos os parâmetros funcionam via app mobile do Zabbix
+# 🌐 REDE: Configure port forwarding no roteador se necessário
+#
+# 📖 Documentação oficial: https://www.zabbix.com/documentation/current/manual/appendix/config/zabbix_agent2
+# 🏠 Projeto: https://github.com/seu-usuario/zabbix-home-monitoring
