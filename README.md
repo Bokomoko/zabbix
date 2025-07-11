@@ -27,8 +27,8 @@ O sistema é composto por:
                        └─────────────────┘
                                 │
                        ┌─────────────────┐
-                       │  Docker Socket  │
-                       │  (Monitoring)   │
+                       │ Podman Socket   │
+                       │ (Monitoring)    │
                        └─────────────────┘
 ```
 
@@ -53,6 +53,29 @@ O projeto inclui dois arquivos de configuração:
 - 🔧 **Inclui arquivo `.env`** pré-configurado (baseado em `.env.example`)
 
 **💡 Recomendação**: Use `podman-compose.env.yml` + arquivo `.env` para maior flexibilidade.
+
+### 🔧 Nomes de Imagens Totalmente Qualificados
+
+Este projeto foi configurado com **nomes de imagens totalmente qualificados** para garantir máxima compatibilidade e segurança com Podman:
+
+```yaml
+# ✅ Configuração atual (totalmente qualificada)
+image: docker.io/zabbix/zabbix-server-pgsql:alpine-trunk
+image: docker.io/zabbix/zabbix-web-nginx-pgsql:alpine-trunk  
+image: docker.io/zabbix/zabbix-agent2:alpine-trunk
+image: docker.io/library/postgres:15.6-bullseye
+
+# ❌ Configuração anterior (não qualificada)
+image: zabbix/zabbix-server-pgsql:alpine-trunk
+image: postgres:15.6-bullseye
+```
+
+**🎯 Vantagens dos Nomes Totalmente Qualificados:**
+- ✅ **Compatibilidade garantida** com Podman
+- ✅ **Não depende** de configurações locais de registry
+- ✅ **Explicitamente define** a origem das imagens
+- ✅ **Evita ambiguidades** entre diferentes registries
+- ✅ **Funciona imediatamente** após clone do projeto
 
 ### Compatibilidade com Docker
 - ✅ **Link simbólico** `docker-compose.yml` → `podman-compose.yml`
@@ -205,6 +228,52 @@ docker-compose -f podman-compose.yml ps
 - **10050**: Zabbix Agent2
 - **10051**: Zabbix Server
 - **31999**: Zabbix Agent2 (porta adicional)
+
+## 🔧 Configurações Avançadas do Podman
+
+### Socket do Podman para Monitoramento
+O Zabbix Agent2 está configurado para monitorar containers através do socket do Podman:
+
+```yaml
+# Configuração automática do socket (já incluída no projeto)
+volumes:
+  - /run/user/${UID:-1000}/podman/podman.sock:/var/run/docker.sock:ro
+```
+
+**🎯 Recursos de Monitoramento de Containers:**
+- ✅ **Status dos containers**: Running, stopped, paused
+- ✅ **Uso de recursos**: CPU, memória, rede por container
+- ✅ **Estatísticas em tempo real**: I/O de disco, tráfego de rede
+- ✅ **Inventário de imagens**: Tamanho, tags, data de criação
+- ✅ **Compatibilidade total** com API Docker (via Podman)
+
+### Variável UID para Multi-usuário
+O projeto inclui suporte automático para diferentes usuários:
+
+```bash
+# No arquivo .env
+UID=1000  # ID do usuário atual
+
+# Para descobrir seu UID
+id -u
+
+# O socket será montado automaticamente de:
+# /run/user/[SEU_UID]/podman/podman.sock
+```
+
+### Configuração Rootless
+O Podman funciona sem privilégios de root, oferecendo maior segurança:
+
+```bash
+# Verificar se Podman está rodando rootless
+podman info | grep -i rootless
+
+# Verificar localização do socket
+ls -la /run/user/$(id -u)/podman/podman.sock
+
+# Status dos containers sem sudo
+podman ps
+```
 
 ## ⚙️ Configurações Especiais
 
