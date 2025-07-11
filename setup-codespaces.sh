@@ -85,7 +85,7 @@ if [[ ! -f "cert/zabbix.crt" ]] || [[ ! -f "cert/zabbix.key" ]]; then
         -out cert/zabbix.crt \
         -subj "/C=BR/ST=Estado/L=Cidade/O=Zabbix-Home/CN=zabbix-codespace" \
         > /dev/null 2>&1
-    
+
     if [[ $? -eq 0 ]]; then
         echo -e "${GREEN}✅ Certificados SSL gerados${NC}"
     else
@@ -129,40 +129,40 @@ echo ""
 # 6. Configurar port forwarding (se estiver no Codespace)
 if [[ -n "$CODESPACES" ]] && command_exists gh; then
     echo "🌐 Configurando port forwarding..."
-    
+
     # Verificar se as portas já estão sendo forwarded
     PORTS_STATUS=$(gh codespace ports 2>/dev/null)
-    
+
     if echo "$PORTS_STATUS" | grep -q "8080"; then
         echo -e "${GREEN}✅ Porta 8080 já está sendo forwarded${NC}"
     else
         echo "   Configurando port forwarding para porta 8080..."
         gh codespace ports forward 8080 > /dev/null 2>&1
     fi
-    
+
     if echo "$PORTS_STATUS" | grep -q "10051"; then
         echo -e "${GREEN}✅ Porta 10051 já está sendo forwarded${NC}"
     else
         echo "   Configurando port forwarding para porta 10051..."
         gh codespace ports forward 10051 > /dev/null 2>&1
     fi
-    
+
     echo ""
-    
+
     # Mostrar URLs de acesso
     echo "🔗 URLs de acesso:"
     echo "=================="
-    
+
     CODESPACE_URL=$(gh codespace ports | grep "8080" | awk '{print $3}' | head -1)
     ZABBIX_SERVER_URL=$(gh codespace ports | grep "10051" | awk '{print $3}' | head -1)
-    
+
     if [[ -n "$CODESPACE_URL" ]]; then
         echo -e "${GREEN}🌐 Interface Web:  $CODESPACE_URL${NC}"
     else
         echo -e "${YELLOW}⚠️  URL da interface web não detectada automaticamente${NC}"
         echo "   Verifique a aba PORTS no VS Code"
     fi
-    
+
     if [[ -n "$ZABBIX_SERVER_URL" ]]; then
         echo -e "${GREEN}📡 Zabbix Server: $ZABBIX_SERVER_URL${NC}"
         echo -e "${BLUE}ℹ️  Use esta URL para configurar agentes externos${NC}"
@@ -170,7 +170,7 @@ if [[ -n "$CODESPACES" ]] && command_exists gh; then
         echo -e "${YELLOW}⚠️  URL do Zabbix Server não detectada automaticamente${NC}"
         echo "   Verifique a aba PORTS no VS Code"
     fi
-    
+
 else
     echo -e "${YELLOW}⚠️  GitHub CLI não encontrado ou não está em Codespace${NC}"
     echo "   Configure port forwarding manualmente na aba PORTS do VS Code"

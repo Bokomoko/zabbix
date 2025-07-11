@@ -149,7 +149,7 @@ environment:
 ```
 🖥️ PCs/Servidores:
 - CPU usage > 90%
-- Memory usage > 85% 
+- Memory usage > 85%
 - Disk free < 10%
 - System uptime
 
