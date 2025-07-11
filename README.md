@@ -125,6 +125,8 @@ cd zabbix
 
 > ✅ **Pronto para Uso**: O projeto já inclui um arquivo `.env` pré-configurado com valores padrão. Você só precisa ajustar o IP do servidor!
 
+> 🌐 **GitHub Codespaces**: Para uso em Codespaces, execute: `./setup-codespaces.sh` para configuração automática com port forwarding. Consulte também `CODESPACES_GUIDE.md` para guia detalhado.
+
 ### 2. Configurar Variáveis de Ambiente (Recomendado)
 
 #### 📋 Estrutura dos Arquivos de Configuração:
