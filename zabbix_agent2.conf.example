@@ -1,0 +1,131 @@
+# Configuração do Zabbix Agent2 para Hosts Externos
+# Copie este arquivo para /etc/zabbix/zabbix_agent2.conf nos hosts que deseja monitorar
+
+# ===========================================
+# CONFIGURAÇÕES BÁSICAS
+# ===========================================
+
+# PID file
+PidFile=/var/run/zabbix/zabbix_agent2.pid
+
+# Log file
+LogFile=/var/log/zabbix/zabbix_agent2.log
+
+# Log level
+# 0 - basic information about starting and stopping of Zabbix processes
+# 1 - critical information
+# 2 - error information
+# 3 - warnings
+# 4 - for debugging (produces lots of information)
+# 5 - extended debugging (produces even more information)
+LogFileSize=100
+
+# ===========================================
+# CONFIGURAÇÕES DE REDE
+# ===========================================
+
+# IP ou hostname do Zabbix Server
+# SUBSTITUA 192.168.1.100 pelo IP real do seu servidor Zabbix
+Server=192.168.1.100
+
+# Porta do Zabbix Server
+ServerPort=10051
+
+# IP ou hostname para conexões ativas (opcional)
+ServerActive=192.168.1.100:10051
+
+# Nome do host (deve ser único)
+# ALTERE para um nome único para cada dispositivo
+Hostname=meu-computador-casa
+
+# ===========================================
+# CONFIGURAÇÕES DE INTERFACE
+# ===========================================
+
+# IP para escutar conexões (0.0.0.0 = todas as interfaces)
+ListenIP=0.0.0.0
+
+# Porta para escutar
+ListenPort=10050
+
+# ===========================================
+# CONFIGURAÇÕES DE SEGURANÇA
+# ===========================================
+
+# Permitir conexões apenas destes IPs (opcional)
+# SUBSTITUA pelo IP do seu servidor Zabbix
+# AllowRoot=1
+
+# Timeout para conexões (segundos)
+Timeout=30
+
+# ===========================================
+# CONFIGURAÇÕES AVANÇADAS
+# ===========================================
+
+# Permitir execução de comandos remotos (cuidado com segurança!)
+# EnableRemoteCommands=1
+
+# Permitir items não seguros (scripts personalizados)
+# UnsafeUserParameters=1
+
+# Intervalo de envio de dados ativos (segundos)
+RefreshActiveChecks=60
+
+# Buffer para items ativos
+BufferSend=5
+BufferSize=100
+
+# ===========================================
+# PLUGINS ESPECÍFICOS
+# ===========================================
+
+# Plugin para Docker (se aplicável)
+Plugins.Docker.Endpoint=unix:///var/run/docker.sock
+
+# Plugin para systemd
+Plugins.Systemd.System=true
+
+# Plugin para proc (monitoramento de processos)
+Plugins.Proc.System=true
+
+# ===========================================
+# PARÂMETROS PERSONALIZADOS (EXEMPLOS)
+# ===========================================
+
+# Exemplo: Monitorar temperatura da CPU (Linux)
+# UserParameter=cpu.temp,sensors | grep "Core 0" | awk '{print $3}' | sed 's/+//g' | sed 's/°C//g'
+
+# Exemplo: Monitorar espaço específico
+# UserParameter=disk.free[*],df -h $1 | tail -1 | awk '{print $4}' | sed 's/%//g'
+
+# Exemplo: Monitorar serviço específico
+# UserParameter=service.status[*],systemctl is-active $1
+
+# Exemplo: Velocidade da internet (requer speedtest-cli)
+# UserParameter=internet.download,speedtest-cli --simple | grep "Download" | awk '{print $2}'
+# UserParameter=internet.upload,speedtest-cli --simple | grep "Upload" | awk '{print $2}'
+
+# ===========================================
+# INSTRUÇÕES DE INSTALAÇÃO
+# ===========================================
+
+# Ubuntu/Debian:
+# 1. wget https://repo.zabbix.com/zabbix/7.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest+ubuntu22.04_all.deb
+# 2. sudo dpkg -i zabbix-release_latest+ubuntu22.04_all.deb
+# 3. sudo apt update && sudo apt install zabbix-agent2
+# 4. sudo cp este_arquivo /etc/zabbix/zabbix_agent2.conf
+# 5. sudo systemctl restart zabbix-agent2
+# 6. sudo systemctl enable zabbix-agent2
+
+# CentOS/RHEL:
+# 1. sudo rpm -Uvh https://repo.zabbix.com/zabbix/7.4/rhel/8/x86_64/zabbix-release-7.4-1.el8.noarch.rpm
+# 2. sudo dnf clean all && sudo dnf install zabbix-agent2
+# 3. sudo cp este_arquivo /etc/zabbix/zabbix_agent2.conf
+# 4. sudo systemctl restart zabbix-agent2
+# 5. sudo systemctl enable zabbix-agent2
+
+# Windows:
+# 1. Baixe o Zabbix Agent2 para Windows do site oficial
+# 2. Instale e configure o arquivo zabbix_agent2.conf
+# 3. Registre como serviço do Windows

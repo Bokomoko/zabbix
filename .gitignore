@@ -1,3 +1,8 @@
 mysql_data
 postgres_data
 .env
+cert/
+backup_*/
+zbx_db15/
+*.log
+*.sql
